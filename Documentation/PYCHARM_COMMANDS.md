@@ -137,6 +137,36 @@ optimizer.recommend_optimal_settings()
 # Интерактивный просмотр дневника
 python utils/diary_viewer.py
 
+# Проверка логов дневника
+python -c "
+import os
+from datetime import datetime
+log_file = f'logs/trading_diary/diary_log_{datetime.now().strftime(\"%Y%m%d\")}.log'
+if os.path.exists(log_file):
+    with open(log_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        print('📔 ПОСЛЕДНИЕ 20 ЗАПИСЕЙ ДНЕВНИКА:')
+        for line in lines[-20:]:
+            print(line.strip())
+else:
+    print('❌ Лог дневника не найден')
+"
+
+# Просмотр логов просмотра дневника
+python -c "
+import os
+from datetime import datetime
+log_file = f'logs/trading_diary/diary_viewer_{datetime.now().strftime(\"%Y%m%d\")}.log'
+if os.path.exists(log_file):
+    with open(log_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        print('👀 ЛОГИ ПРОСМОТРА ДНЕВНИКА:')
+        for line in lines[-10:]:
+            print(line.strip())
+else:
+    print('❌ Логи просмотра не найдены')
+"
+
 # Сегодняшние результаты
 python -c "
 from utils.diary_viewer import DiaryViewer
