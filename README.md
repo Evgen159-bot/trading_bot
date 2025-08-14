@@ -1,4 +1,3 @@
-[Readme.md](https://github.com/user-attachments/files/21764856/Readme.md)
 # 🤖 ByBit Trading Bot - Полное руководство
 
 Профессиональный автоматический торговый бот для криптобиржи ByBit с 8 торговыми стратегиями, продвинутым техническим анализом и интеллектуальным управлением рисками.
@@ -417,6 +416,12 @@ tail -f logs/validation/validation_$(date +%Y%m%d).log
 ```bash
 # Интерактивный просмотр
 python utils/diary_viewer.py
+
+# Просмотр логов дневника
+tail -f logs/trading_diary/diary_log_$(date +%Y%m%d).log
+
+# Логи просмотра дневника пользователем
+tail -f logs/trading_diary/diary_viewer_$(date +%Y%m%d).log
 
 # Сегодняшний день
 python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_today()"
