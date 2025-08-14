@@ -1,0 +1,23 @@
+{
+  "date": "2025-08-12",
+  "session_start": "2025-08-12T23:59:23.648381",
+  "start_balance": 1100.0,
+  "current_balance": 1100.0,
+  "positions": [],
+  "trades": [],
+  "daily_stats": {
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "total_pnl": 0.0,
+    "total_fees": 0.0,
+    "max_profit": 0.0,
+    "max_loss": 0.0,
+    "win_rate": 0.0,
+    "profit_factor": 0.0
+  },
+  "session_end": null,
+  "end_balance": 0.0,
+  "daily_return": 0.0,
+  "daily_return_pct": 0.0
+}
