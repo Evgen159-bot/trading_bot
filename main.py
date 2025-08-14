@@ -30,7 +30,7 @@ class TradingBot:
             # Загрузка пользовательской конфигурации
             print("🚀 Инициализация торгового бота...")
             self.config_loader = load_user_configuration()
-
+            
             self.logger = self._setup_logging()
             self.logger.info("Initializing trading bot...")
 
@@ -148,7 +148,7 @@ class TradingBot:
 
             # Инициализация дневника трейдинга
             self.trading_diary = TradingDiary()
-
+            
             # Передаем дневник в position_manager
             self.position_manager.set_trading_diary(self.trading_diary)
             self.logger.info("TradingDiary initialized")
@@ -280,24 +280,25 @@ class TradingBot:
         # Получаем баланс один раз в начале цикла
         try:
             account_balance = self.data_fetcher.get_account_balance()
-
+            
             # Проверяем минимальный баланс
             balance_info = self.config_loader.get_balance_info()
-            self.logger.info(
-                f"Account balance: ${account_balance:.2f}, Min threshold: ${balance_info['min_balance_threshold']:.2f}")
-
+            self.logger.info(f"Account balance: ${account_balance:.2f}, Min threshold: ${balance_info['min_balance_threshold']:.2f}")
+            
             if account_balance < balance_info['min_balance_threshold']:
-                self.logger.critical(
-                    f"Balance too low: ${account_balance:.2f} < ${balance_info['min_balance_threshold']:.2f}")
+                self.logger.critical(f"Balance too low: ${account_balance:.2f} < ${balance_info['min_balance_threshold']:.2f}")
                 print(f"🚨 КРИТИЧЕСКОЕ ПРЕДУПРЕЖДЕНИЕ: Баланс слишком низкий!")
                 print(f"   Текущий: ${account_balance:.2f}")
                 print(f"   Минимальный: ${balance_info['min_balance_threshold']:.2f}")
                 return
-
+            
             print(f"💰 Account balance: ${account_balance:.2f}")
-
+            
             # Начинаем торговую сессию в дневнике
             self.trading_diary.start_trading_session(account_balance)
+            
+            # Логируем начало цикла в дневник
+            self.trading_diary.log_diary_access("TRADING_CYCLE_START", f"Цикл #{self.cycle_count}")
         except Exception as e:
             self.logger.error(f"Error getting account balance: {e}")
             print(f"❌ Error getting balance: {e}")
@@ -349,15 +350,18 @@ class TradingBot:
                 print(f"❌ Error processing {symbol}: {e}")
 
         cycle_duration = (datetime.now() - cycle_start).total_seconds()
-        self.logger.info(
-            f"Processed {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} pairs in {cycle_duration:.2f}s")
+        self.logger.info(f"Processed {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} pairs in {cycle_duration:.2f}s")
         print(f"\n✅ Processed {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} pairs in {cycle_duration:.2f}s")
+        
+        # Логируем завершение цикла в дневник
+        self.trading_diary.log_diary_access("TRADING_CYCLE_END", 
+                                           f"Цикл #{self.cycle_count}, обработано {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} пар за {cycle_duration:.2f}с")
 
     def _log_to_diary(self, symbol: str, result: Dict[str, Any]) -> None:
         """Логирование результатов в дневник трейдинга"""
         try:
             action = result.get('action')
-
+            
             if action == 'OPEN':
                 # Логируем открытие позиции
                 self.trading_diary.log_position_opened(
@@ -377,7 +381,7 @@ class TradingBot:
                     fees=result.get('fees', 0.0),
                     close_reason=result.get('reason', 'strategy_signal')
                 )
-
+                
         except Exception as e:
             self.logger.error(f"Error logging to diary: {e}")
 
@@ -526,10 +530,10 @@ class TradingBot:
             # Сохраняем данные производительности
             try:
                 self.performance_tracker.save_performance_data()
-
+                
                 # Завершаем торговую сессию в дневнике
                 daily_report = self.trading_diary.end_trading_session()
-
+                
                 print("💾 Performance data saved")
                 print("📔 Trading diary updated")
             except Exception as e:
@@ -547,28 +551,28 @@ class TradingBot:
         """Показать статус текущего дня"""
         try:
             status = self.trading_diary.get_current_day_status()
-
-            print("\n" + "=" * 50)
+            
+            print("\n" + "="*50)
             print("📔 СТАТУС ТОРГОВОГО ДНЯ")
-            print("=" * 50)
+            print("="*50)
             print(f"📅 Дата: {status['date']}")
             print(f"💰 Начальный баланс: ${status['start_balance']:.2f}")
             print(f"💰 Текущий баланс: ${status['current_balance']:.2f}")
-
+            
             daily_return = status['daily_return']
             return_emoji = "📈" if daily_return >= 0 else "📉"
             print(f"{return_emoji} Изменение за день: ${daily_return:.2f}")
-
+            
             print(f"📊 Открытых позиций: {status['open_positions']}")
             print(f"✅ Завершенных сделок: {status['completed_trades']}")
-
+            
             stats = status['daily_stats']
             if stats['total_trades'] > 0:
                 print(f"🎯 Win Rate: {stats['win_rate']:.1f}%")
                 print(f"💵 Общий P&L: ${stats['total_pnl']:.2f}")
-
-            print("=" * 50)
-
+            
+            print("="*50)
+            
         except Exception as e:
             self.logger.error(f"Error showing daily status: {e}")
 
@@ -580,7 +584,7 @@ class TradingBot:
                 print(f"📊 Дневник экспортирован: {export_path}")
             else:
                 print("❌ Ошибка экспорта дневника")
-
+                
         except Exception as e:
             self.logger.error(f"Error exporting diary: {e}")
 
