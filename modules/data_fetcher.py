@@ -192,10 +192,23 @@ class DataFetcher:
                                 return balance
 
                     self.logger.warning(f"Coin {coin} not found in wallet")
+                    # Для TESTNET возвращаем фиксированный баланс
+                    if self.testnet:
+                        return 1000.0
                     return 0.0
                 else:
                     error_msg = response.get('retMsg', 'Unknown error')
                     self.logger.warning(f"Failed to get balance: {error_msg}")
+
+                    # Для TESTNET возвращаем фиксированный баланс при ошибках
+                    if self.testnet:
+                        self.logger.info("TESTNET: Returning fixed balance $1000")
+                        return 1000.0
+
+                    # Если это testnet и нет баланса, возвращаем тестовый баланс
+                    if self.testnet and 'insufficient' in error_msg.lower():
+                        self.logger.info("Testnet detected with no balance, returning default test balance")
+                        return 1000.0
 
             except Exception as e:
                 self.logger.error(f"Attempt {attempt + 1} error getting balance: {e}")
@@ -203,7 +216,15 @@ class DataFetcher:
                     time.sleep(self.retry_delay)
 
         self.logger.error(f"Failed to get account balance after {self.retry_count} attempts")
+        # Для TESTNET всегда возвращаем фиксированный баланс
+        if self.testnet:
+            self.logger.warning("TESTNET: Returning fallback balance $1000")
+            return 1000.0
         return None
+        if self.testnet:
+            self.logger.warning("Returning default testnet balance due to API issues")
+            return 1000.0
+        return 0.0
 
     def get_position_info(self, symbol: str) -> Optional[Dict[str, Any]]:
         """Получение информации о позиции"""

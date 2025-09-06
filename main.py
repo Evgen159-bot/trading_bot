@@ -30,7 +30,7 @@ class TradingBot:
             # Загрузка пользовательской конфигурации
             print("🚀 Инициализация торгового бота...")
             self.config_loader = load_user_configuration()
-            
+
             self.logger = self._setup_logging()
             self.logger.info("Initializing trading bot...")
 
@@ -148,7 +148,7 @@ class TradingBot:
 
             # Инициализация дневника трейдинга
             self.trading_diary = TradingDiary()
-            
+
             # Передаем дневник в position_manager
             self.position_manager.set_trading_diary(self.trading_diary)
             self.logger.info("TradingDiary initialized")
@@ -280,25 +280,37 @@ class TradingBot:
         # Получаем баланс один раз в начале цикла
         try:
             account_balance = self.data_fetcher.get_account_balance()
-            
+
+            # Если баланс не получен, используем значение из конфигурации
+            if account_balance is None or account_balance <= 0:
+                balance_info = self.config_loader.get_balance_info()
+                account_balance = balance_info['initial_balance']
+                self.logger.warning(f"Используем баланс из конфигурации: ${account_balance:.2f}")
+
             # Проверяем минимальный баланс
             balance_info = self.config_loader.get_balance_info()
-            self.logger.info(f"Account balance: ${account_balance:.2f}, Min threshold: ${balance_info['min_balance_threshold']:.2f}")
-            
+            if account_balance is not None:
+                self.logger.info(
+                    f"Account balance: ${account_balance:.2f}, Min threshold: ${balance_info['min_balance_threshold']:.2f}")
+            else:
+                self.logger.error("Failed to get account balance - API connection issue")
+                account_balance = 0.0
+
             if account_balance < balance_info['min_balance_threshold']:
-                self.logger.critical(f"Balance too low: ${account_balance:.2f} < ${balance_info['min_balance_threshold']:.2f}")
+                self.logger.critical(
+                    f"Balance too low: ${account_balance:.2f} < ${balance_info['min_balance_threshold']:.2f}")
                 print(f"🚨 КРИТИЧЕСКОЕ ПРЕДУПРЕЖДЕНИЕ: Баланс слишком низкий!")
                 print(f"   Текущий: ${account_balance:.2f}")
                 print(f"   Минимальный: ${balance_info['min_balance_threshold']:.2f}")
                 return
-            
+
             print(f"💰 Account balance: ${account_balance:.2f}")
-            
+
             # Начинаем торговую сессию в дневнике
             self.trading_diary.start_trading_session(account_balance)
-            
-            # Логируем начало цикла в дневник
-            self.trading_diary.log_diary_access("TRADING_CYCLE_START", f"Цикл #{self.cycle_count}")
+
+            # Простое логирование начала цикла
+            self.logger.info(f"Цикл #{self.cycle_count} начат с балансом ${account_balance:.2f}")
         except Exception as e:
             self.logger.error(f"Error getting account balance: {e}")
             print(f"❌ Error getting balance: {e}")
@@ -322,9 +334,58 @@ class TradingBot:
                 self.logger.info(f"Executing strategy for {symbol}")
                 result = self.strategy.execute(symbol, market_data)
 
+                # Добавляем детальное логирование результата стратегии
                 if result:
-                    self.logger.info(f"Strategy result for {symbol}: {result['action']}")
-                    print(f"📋 Strategy result for {symbol}: {result['action']}")
+                    action = result.get('action', 'UNKNOWN')
+                    direction = result.get('direction', 'UNKNOWN')
+                    confidence = result.get('confidence', 0)
+                    reasons = result.get('reasons', 'No reasons provided')
+
+                    self.logger.info(f"Strategy result for {symbol}: {action}")
+                    if action == 'OPEN':
+                        self.logger.info(f"  Direction: {direction}")
+                        self.logger.info(f"  Confidence: {confidence:.1%}")
+                        self.logger.info(f"  Entry Price: ${result.get('entry_price', 0):.4f}")
+                        self.logger.info(f"  Stop Loss: ${result.get('stop_loss', 0):.4f}")
+                        self.logger.info(f"  Take Profit: ${result.get('take_profit', 0):.4f}")
+                        self.logger.info(f"  Size: {result.get('size', 0)}")
+                        self.logger.info(f"  Reasons: {reasons}")
+                    elif action == 'CLOSE':
+                        self.logger.info(f"  Close reason: {result.get('reason', 'Unknown')}")
+                        self.logger.info(f"  Exit price: ${result.get('exit_price', 0):.4f}")
+                else:
+                    self.logger.info(f"No action for {symbol}")
+                    # Простое логирование без вызова несуществующего метода
+                    if hasattr(self.strategy, 'last_signal_time') and self.strategy.last_signal_time:
+                        time_since_last = (datetime.now() - self.strategy.last_signal_time).total_seconds()
+                        self.logger.debug(f"Time since last signal for {symbol}: {time_since_last:.0f}s")
+
+                if result:
+                    action = result.get('action', 'UNKNOWN')
+                    print(f"📋 Strategy result for {symbol}: {action}")
+
+                    if action == 'OPEN':
+                        direction = result.get('direction', 'UNKNOWN')
+                        confidence = result.get('confidence', 0)
+                        entry_price = result.get('entry_price', 0)
+                        print(f"   📈 {direction} signal with {confidence:.1%} confidence")
+                        print(f"   💰 Entry: ${entry_price:.4f}")
+                        print(f"   🛑 Stop: ${result.get('stop_loss', 0):.4f}")
+                        print(f"   🎯 Target: ${result.get('take_profit', 0):.4f}")
+                        print(f"   📊 Reasons: {result.get('reasons', 'N/A')}")
+
+                        # ПОПЫТКА ОТКРЫТЬ РЕАЛЬНУЮ ПОЗИЦИЮ
+                        try:
+                            position_opened = self.position_manager.open_position(symbol, result)
+                            if position_opened:
+                                print(f"   ✅ ПОЗИЦИЯ ОТКРЫТА для {symbol}")
+                                self.logger.info(f"POSITION SUCCESSFULLY OPENED for {symbol}")
+                            else:
+                                print(f"   ❌ ОШИБКА ОТКРЫТИЯ ПОЗИЦИИ для {symbol}")
+                                self.logger.error(f"FAILED TO OPEN POSITION for {symbol}")
+                        except Exception as e:
+                            print(f"   💥 КРИТИЧЕСКАЯ ОШИБКА при открытии {symbol}: {e}")
+                            self.logger.error(f"CRITICAL ERROR opening position for {symbol}: {e}")
 
                     # Логируем в дневник
                     self._log_to_diary(symbol, result)
@@ -337,9 +398,10 @@ class TradingBot:
                 else:
                     self.logger.debug(f"No action for {symbol}")
                     print(f"⏸️  No action for {symbol}")
-
-                # Обновляем позиции
-                self.update_positions(symbol)
+                    # Простое логирование без вызова несуществующего метода
+                    if hasattr(self.strategy, 'last_signal_time') and self.strategy.last_signal_time:
+                        time_since_last = (datetime.now() - self.strategy.last_signal_time).total_seconds()
+                        self.logger.debug(f"Time since last signal for {symbol}: {time_since_last:.0f}s")
                 successful_pairs += 1
 
                 # Небольшая пауза между парами
@@ -350,18 +412,19 @@ class TradingBot:
                 print(f"❌ Error processing {symbol}: {e}")
 
         cycle_duration = (datetime.now() - cycle_start).total_seconds()
-        self.logger.info(f"Processed {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} pairs in {cycle_duration:.2f}s")
+        self.logger.info(
+            f"Processed {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} pairs in {cycle_duration:.2f}s")
         print(f"\n✅ Processed {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} pairs in {cycle_duration:.2f}s")
-        
-        # Логируем завершение цикла в дневник
-        self.trading_diary.log_diary_access("TRADING_CYCLE_END", 
-                                           f"Цикл #{self.cycle_count}, обработано {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} пар за {cycle_duration:.2f}с")
+
+        # Простое логирование завершения цикла
+        self.logger.info(
+            f"Торговый цикл #{self.cycle_count} завершен: {successful_pairs}/{len(TradingConfig.TRADING_PAIRS)} пар за {cycle_duration:.2f}с")
 
     def _log_to_diary(self, symbol: str, result: Dict[str, Any]) -> None:
         """Логирование результатов в дневник трейдинга"""
         try:
             action = result.get('action')
-            
+
             if action == 'OPEN':
                 # Логируем открытие позиции
                 self.trading_diary.log_position_opened(
@@ -381,7 +444,7 @@ class TradingBot:
                     fees=result.get('fees', 0.0),
                     close_reason=result.get('reason', 'strategy_signal')
                 )
-                
+
         except Exception as e:
             self.logger.error(f"Error logging to diary: {e}")
 
@@ -530,10 +593,10 @@ class TradingBot:
             # Сохраняем данные производительности
             try:
                 self.performance_tracker.save_performance_data()
-                
+
                 # Завершаем торговую сессию в дневнике
                 daily_report = self.trading_diary.end_trading_session()
-                
+
                 print("💾 Performance data saved")
                 print("📔 Trading diary updated")
             except Exception as e:
@@ -551,28 +614,28 @@ class TradingBot:
         """Показать статус текущего дня"""
         try:
             status = self.trading_diary.get_current_day_status()
-            
-            print("\n" + "="*50)
+
+            print("\n" + "=" * 50)
             print("📔 СТАТУС ТОРГОВОГО ДНЯ")
-            print("="*50)
+            print("=" * 50)
             print(f"📅 Дата: {status['date']}")
             print(f"💰 Начальный баланс: ${status['start_balance']:.2f}")
             print(f"💰 Текущий баланс: ${status['current_balance']:.2f}")
-            
+
             daily_return = status['daily_return']
             return_emoji = "📈" if daily_return >= 0 else "📉"
             print(f"{return_emoji} Изменение за день: ${daily_return:.2f}")
-            
+
             print(f"📊 Открытых позиций: {status['open_positions']}")
             print(f"✅ Завершенных сделок: {status['completed_trades']}")
-            
+
             stats = status['daily_stats']
             if stats['total_trades'] > 0:
                 print(f"🎯 Win Rate: {stats['win_rate']:.1f}%")
                 print(f"💵 Общий P&L: ${stats['total_pnl']:.2f}")
-            
-            print("="*50)
-            
+
+            print("=" * 50)
+
         except Exception as e:
             self.logger.error(f"Error showing daily status: {e}")
 
@@ -584,7 +647,7 @@ class TradingBot:
                 print(f"📊 Дневник экспортирован: {export_path}")
             else:
                 print("❌ Ошибка экспорта дневника")
-                
+
         except Exception as e:
             self.logger.error(f"Error exporting diary: {e}")
 
@@ -601,18 +664,18 @@ def main():
         bot.start()
 
     except KeyboardInterrupt:
-        print("\n⚠️  Shutdown signal received")
+        print("\n⚠️  Получен сигнал остановки")
 
     except Exception as e:
-        print(f"\n💥 Critical error: {e}")
+        print(f"\n💥 Критическая ошибка: {e}")
         import traceback
         print(traceback.format_exc())
 
     finally:
         if bot:
-            print("\n🔄 Initiating shutdown sequence...")
+            print("\n🔄 Инициализация последовательности остановки...")
             bot.stop()
-        print("\n👋 Goodbye!")
+        print("\n👋 До свидания!")
 
 
 if __name__ == "__main__":

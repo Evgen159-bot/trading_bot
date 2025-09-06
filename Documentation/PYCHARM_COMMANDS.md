@@ -1,8 +1,9 @@
-# 🖥️ Справка по командам PyCharm для торгового бота
+# 🖥️ Справка по командам PyCharm для торгового бота (2025)
 
 ## 📋 Содержание
 
 - [🚀 Основные команды запуска](#-основные-команды-запуска)
+- [🔧 Новые инструменты отладки (2025)](#-новые-инструменты-отладки-2025)
 - [🔍 Диагностика и отладка](#-диагностика-и-отладка)
 - [📊 Мониторинг и анализ](#-мониторинг-и-анализ)
 - [⚙️ Настройка и конфигурация](#️-настройка-и-конфигурация)
@@ -39,6 +40,157 @@ Ctrl+C
 # Принудительная остановка процесса
 # Найти процесс: tasklist | findstr python
 # Убить процесс: taskkill /PID <process_id> /F
+```
+
+---
+
+## 🔧 Новые инструменты отладки (2025)
+
+### 🎯 **Детальная отладка стратегий:**
+
+```bash
+# Детальная отладка конкретной пары
+python utils/strategy_debug_tool.py ETHUSDT
+
+# Отладка всех активных пар
+python utils/strategy_debug_tool.py
+
+# Что показывает:
+# - Все рассчитанные индикаторы (RSI, MACD, EMA, Volume)
+# - Детальный анализ условий входа для Long/Short
+# - Причины отсутствия сигналов
+# - Рекомендации по оптимизации параметров
+
+# Пример использования:
+# 🔍 ДЕТАЛЬНАЯ ОТЛАДКА СИГНАЛОВ ДЛЯ ETHUSDT
+# ✅ Индикаторы рассчитаны: 10 значений
+#    RSI: 45.2
+#    MACD: 0.000123 vs Signal: 0.000156
+#    Volume Ratio: 0.85
+# 
+# 🎯 АНАЛИЗ УСЛОВИЙ:
+#    Long условия: 2.0/3 выполнено (нужно 3)
+#    Long валидность: ❌ Нет
+# 
+# 💡 РЕКОМЕНДАЦИИ:
+#    - Снизьте min_conditions_required до 2
+#    - Снизьте min_ratio до 0.8
+```
+
+### 📊 **Анализ логов:**
+
+```bash
+# Полный анализ логов с рекомендациями
+python utils/log_analyzer.py
+
+# Анализ конкретного файла
+python utils/log_analyzer.py logs/trading_20250901.log
+
+# Что показывает:
+# - Статистику ошибок и предупреждений
+# - Частоту генерации сигналов
+# - Производительность торговых циклов
+# - Рекомендации по улучшению
+
+# Пример использования:
+# 📊 АНАЛИЗ ЛОГОВ ТОРГОВОГО БОТА
+# 📈 БАЗОВАЯ СТАТИСТИКА:
+#    Всего записей: 29275
+#    ERROR: 55
+#    OPEN сигналов: 8
+#    CLOSE сигналов: 558
+#    Торговых циклов: 1497
+#    Среднее время цикла: 6.45с
+# 
+# 💡 РЕКОМЕНДАЦИИ ПО УЛУЧШЕНИЮ:
+#    🔧 Для увеличения количества сигналов:
+#       - Снизьте min_conditions_required до 2
+#       - Снизьте min_ratio до 0.8
+```
+
+### 🎯 **Оптимизация объемов:**
+
+```bash
+# Анализ объемных паттернов
+python utils/volume_optimizer.py
+
+# Что показывает:
+# - Анализ объемных паттернов для каждой пары
+# - Процент свечей с достаточным объемом
+# - Рекомендации по настройке min_ratio
+# - Оптимальные пороги фильтров
+
+# Пример использования:
+# 📊 АНАЛИЗ ОБЪЕМНЫХ ПАТТЕРНОВ
+# 
+# 📈 Анализ ETHUSDT:
+#    📊 Средний Volume Ratio: 1.15
+#    ✅ Свечей с объемом > 1.1: 35.2%
+#    ✅ Свечей с объемом > 0.8: 67.8%
+#    💡 Рекомендация: Снизить min_ratio до 0.8
+# 
+# 💡 РЕКОМЕНДАЦИИ ПО ОПТИМИЗАЦИИ:
+# 1. 📉 Снизить требования к объему:
+#    'min_ratio': 0.8,  # Вместо 1.5
+# 2. 🎯 Снизить требования к условиям:
+#    'min_conditions_required': 2,  # Вместо 3
+```
+
+### 🔍 **Быстрая проверка:**
+
+```bash
+# Быстрый анализ без загрузки больших файлов
+python utils/simple_log_check.py
+
+# Что показывает:
+# - Статистику последних записей
+# - Количество OPEN/CLOSE сигналов
+# - Последние 30 записей с цветовым выделением
+# - Быстрые рекомендации
+
+# Пример использования:
+# 🔍 БЫСТРЫЙ АНАЛИЗ ЛОГОВ
+# 📊 СТАТИСТИКА:
+#    Всего записей: 29275
+#    Ошибок: 55
+#    OPEN сигналов: 8
+#    CLOSE сигналов: 558
+# 
+# 🎯 АНАЛИЗ ПАТТЕРНОВ СИГНАЛОВ:
+#    ETHUSDT: OPEN=3, CLOSE=180, NO_ACTION=1314
+#    🚨 DOGEUSDT: Много OPEN, нет CLOSE - проблема с логикой!
+```
+
+### 📊 **Анализ результатов работы:**
+
+```bash
+# Полный анализ результатов работы бота
+python check_results.py
+
+# Что показывает:
+# - Анализ логов за день
+# - Статистику сигналов и ошибок
+# - Данные дневника торговли
+# - Рекомендации по улучшению
+
+# Пример использования:
+# 📊 АНАЛИЗ РЕЗУЛЬТАТОВ РАБОТЫ БОТА
+# 📄 АНАЛИЗ ЛОГОВ:
+#    📝 Всего записей: 29275
+#    🔄 Торговых циклов: 1497
+#    📈 OPEN сигналов: 8
+#    📉 CLOSE сигналов: 558
+# 
+# 📔 АНАЛИЗ ДНЕВНИКА:
+#    💰 Начальный баланс: $1100.00
+#    💰 Текущий баланс: $-1868.42
+#    📈 Дневной результат: $-2968.42
+#    📊 Всего сделок: 13
+# 
+# 💡 РЕКОМЕНДАЦИИ:
+#    ✅ Сигналы генерируются - стратегия работает!
+#    🎯 Попыток открыть позицию: 8
+#    ⚠️ Проблемы с расчетом PnL - исправлено в 2025
 ```
 
 ---
@@ -93,6 +245,25 @@ print('=' * 50)
 ### Отладка стратегий
 
 ```bash
+# 🔧 НОВЫЕ инструменты отладки (2025):
+
+# Детальная отладка стратегии
+python utils/strategy_debug_tool.py ETHUSDT
+
+# Анализ логов
+python utils/log_analyzer.py
+
+# Оптимизация объемов
+python utils/volume_optimizer.py
+
+# Быстрая проверка
+python utils/simple_log_check.py
+
+# Анализ результатов
+python check_results.py
+
+# 📊 СТАНДАРТНЫЕ инструменты:
+
 # Простой тест стратегии
 python utils/simple_strategy_test.py
 
@@ -112,30 +283,20 @@ python utils/market_analyzer_test.py
 python utils/market_analyzer_test.py --signals
 ```
 
-### Анализ объемов
-
-```bash
-# Анализ объемных паттернов
-python utils/volume_optimizer.py
-
-# Рекомендации по оптимизации
-python -c "
-from utils.volume_optimizer import VolumeOptimizer
-optimizer = VolumeOptimizer()
-optimizer.analyze_volume_patterns()
-optimizer.recommend_optimal_settings()
-"
-```
-
 ---
 
 ## 📊 Мониторинг и анализ
 
-### Просмотр дневника торговли
+### Просмотр дневника торговли (ОБНОВЛЕНО 2025)
 
 ```bash
-# Интерактивный просмотр дневника
+# 📔 Интерактивный просмотр дневника
 python utils/diary_viewer.py
+
+# Быстрые команды
+python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_today()"
+python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_week()"
+python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().list_available_days()"
 
 # Проверка логов дневника
 python -c "
@@ -152,40 +313,12 @@ else:
     print('❌ Лог дневника не найден')
 "
 
-# Просмотр логов просмотра дневника
+# Экспорт дневника в CSV
 python -c "
-import os
-from datetime import datetime
-log_file = f'logs/trading_diary/diary_viewer_{datetime.now().strftime(\"%Y%m%d\")}.log'
-if os.path.exists(log_file):
-    with open(log_file, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-        print('👀 ЛОГИ ПРОСМОТРА ДНЕВНИКА:')
-        for line in lines[-10:]:
-            print(line.strip())
-else:
-    print('❌ Логи просмотра не найдены')
-"
-
-# Сегодняшние результаты
-python -c "
-from utils.diary_viewer import DiaryViewer
-viewer = DiaryViewer()
-viewer.show_today()
-"
-
-# Недельная сводка
-python -c "
-from utils.diary_viewer import DiaryViewer
-viewer = DiaryViewer()
-viewer.show_week()
-"
-
-# Список доступных дней
-python -c "
-from utils.diary_viewer import DiaryViewer
-viewer = DiaryViewer()
-viewer.list_available_days()
+from modules.trading_diary import TradingDiary
+diary = TradingDiary()
+export_path = diary.export_diary_to_csv(30)  # За 30 дней
+print(f'📊 Дневник экспортирован: {export_path}' if export_path else '❌ Ошибка экспорта')
 "
 
 # Конкретный день (замените дату)
@@ -193,7 +326,7 @@ python -c "
 from utils.diary_viewer import DiaryViewer
 from datetime import date
 viewer = DiaryViewer()
-viewer.show_day(date(2025, 8, 13))
+viewer.show_day(date(2025, 9, 1))
 "
 ```
 
@@ -234,6 +367,16 @@ print(f'Статистика стратегии: {stats}')
 ### Просмотр логов
 
 ```bash
+# 🔧 НОВЫЕ команды для анализа логов (2025):
+
+# Быстрая проверка логов
+python utils/simple_log_check.py
+
+# Полный анализ логов
+python utils/log_analyzer.py
+
+# 📊 СТАНДАРТНЫЕ команды:
+
 # Последние 50 строк основного лога
 python -c "
 import os
@@ -368,6 +511,16 @@ print(f'🔑 Режим: {\"TESTNET\" if UserConfig.USE_TESTNET else \"РЕАЛ�
 ### Тестирование компонентов
 
 ```bash
+# 🔧 НОВЫЕ тесты (2025):
+
+# Простое тестирование стратегии
+python utils/simple_strategy_test.py
+
+# Детальная отладка стратегии
+python utils/strategy_debug_tool.py ETHUSDT
+
+# 📊 СТАНДАРТНЫЕ тесты:
+
 # Тест получения данных
 python -c "
 from modules.data_fetcher import DataFetcher
@@ -444,6 +597,16 @@ print(f'🔍 Строгая валидация: {\"PASSED\" if result.get(\"is_v
 ### Анализ производительности
 
 ```bash
+# 🔧 НОВЫЕ команды анализа (2025):
+
+# Полный анализ результатов
+python check_results.py
+
+# Анализ дневника торговли
+python utils/diary_viewer.py
+
+# 📊 СТАНДАРТНЫЕ команды:
+
 # Метрики производительности
 python -c "
 from modules.performance_tracker import PerformanceTracker
@@ -485,6 +648,8 @@ else:
 ### Статус текущего дня
 
 ```bash
+# 🔧 НОВЫЕ команды статуса (2025):
+
 # Статус торгового дня
 python -c "
 from modules.trading_diary import TradingDiary
@@ -534,7 +699,9 @@ if UserConfig.SELECTED_STRATEGY == 'custom':
     print('🛠️ НАСТРОЙКИ ПОЛЬЗОВАТЕЛЬСКОЙ СТРАТЕГИИ:')
     print(f'   Мин. условий: {config[\"entry_conditions\"][\"min_conditions_required\"]}')
     print(f'   Cooldown: {config[\"entry_conditions\"][\"signal_cooldown\"]}с')
-    print(f'   RSI период: {config[\"rsi_settings\"][\"period\"]}')
+    print(f'   Риск на сделку: {config[\"risk_management\"][\"risk_per_trade\"]*100:.1f}%')
+    print(f'   Макс. стоп-лосс: {config[\"risk_management\"][\"max_stop_loss_pct\"]*100:.1f}%')
+    print(f'   Плечо: {config[\"risk_management\"][\"leverage\"]}x')
     print(f'   Volume порог: {config[\"volume_settings\"][\"min_ratio\"]}')
 else:
     print(f'ℹ️ Используется автоматическая стратегия: {UserConfig.SELECTED_STRATEGY}')
@@ -683,44 +850,6 @@ for file_name in required_files:
 "
 ```
 
-### Установка и обновление
-
-```bash
-# Проверка зависимостей
-python -c "
-import subprocess
-import sys
-result = subprocess.run([sys.executable, '-m', 'pip', 'list'], capture_output=True, text=True)
-packages = result.stdout
-required = ['pandas', 'numpy', 'ta', 'pybit', 'requests', 'python-dotenv']
-print('📦 УСТАНОВЛЕННЫЕ ПАКЕТЫ:')
-for package in required:
-    if package in packages.lower():
-        print(f'   ✅ {package}')
-    else:
-        print(f'   ❌ {package} - НЕ УСТАНОВЛЕН')
-"
-
-# Обновление зависимостей
-pip install --upgrade -r requirements.txt
-
-# Установка недостающих модулей
-pip install ta python-dotenv pandas numpy pybit requests
-
-# Проверка версий
-python -c "
-import pandas as pd
-import numpy as np
-import ta
-import pybit
-print('📊 ВЕРСИИ МОДУЛЕЙ:')
-print(f'   pandas: {pd.__version__}')
-print(f'   numpy: {np.__version__}')
-print(f'   ta: {ta.__version__}')
-print(f'   pybit: {pybit.__version__}')
-"
-```
-
 ---
 
 ## 🆘 Устранение неполадок
@@ -728,14 +857,14 @@ print(f'   pybit: {pybit.__version__}')
 ### Диагностика проблем
 
 ```bash
-# Полная диагностика
+# 🔧 НОВАЯ полная диагностика (2025)
 python -c "
 import sys
 import os
 import platform
 from datetime import datetime
 
-print('🔍 ПОЛНАЯ ДИАГНОСТИКА ТОРГОВОГО БОТА')
+print('🔍 ПОЛНАЯ ДИАГНОСТИКА ТОРГОВОГО БОТА (2025)')
 print('=' * 60)
 print(f'Время: {datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")}')
 print(f'Платформа: {platform.system()} {platform.release()}')
@@ -803,6 +932,15 @@ else:
 ### Исправление проблем
 
 ```bash
+# 🔧 НОВЫЕ команды исправления (2025):
+
+# Анализ и исправление проблем
+python utils/strategy_debug_tool.py ETHUSDT  # Диагностика стратегии
+python utils/log_analyzer.py                # Анализ логов
+python utils/volume_optimizer.py            # Оптимизация настроек
+
+# 📊 СТАНДАРТНЫЕ команды:
+
 # Сброс дневника (при проблемах)
 python -c "
 import os
@@ -856,41 +994,75 @@ print('   2. Или восстановите из бэкапа')
 
 ## 🎯 Быстрые команды (закладки PyCharm)
 
-### Ежедневные команды
+### Ежедневные команды (ОБНОВЛЕНО 2025)
 
 ```bash
-# Утренняя проверка
-python user_config.py && python utils/diary_viewer.py
+# 🔧 НОВАЯ утренняя проверка (2025)
+python utils/diary_viewer.py && python utils/simple_log_check.py
 
 # Запуск бота
 python main.py
 
-# Быстрая диагностика
-python utils/simple_strategy_test.py
+# 🔧 НОВАЯ быстрая диагностика (2025)
+python utils/strategy_debug_tool.py ETHUSDT
 
 # Статус дня
 python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_today()"
 ```
 
-### Команды для отладки
+### Команды для отладки (ОБНОВЛЕНО 2025)
 
 ```bash
+# 🔧 НОВЫЕ инструменты отладки (2025):
+
+# Детальная отладка стратегии
+python utils/strategy_debug_tool.py ETHUSDT
+
+# Анализ логов с рекомендациями
+python utils/log_analyzer.py
+
+# Оптимизация объемных фильтров
+python utils/volume_optimizer.py
+
+# Быстрая проверка логов
+python utils/simple_log_check.py
+
+# Полный анализ результатов
+python check_results.py
+
+# 📊 СТАНДАРТНЫЕ инструменты:
+
 # Полная отладка
 python utils/debug_strategy.py --all
 
 # Тест API
 python -c "from modules.data_fetcher import DataFetcher; print('✅ OK' if DataFetcher().health_check() else '❌ ERROR')"
 
-# Анализ объемов
-python utils/volume_optimizer.py
-
 # Проверка конфигурации
 python -c "from user_config import UserConfig; is_valid, errors = UserConfig.validate_config(); print('✅ OK' if is_valid else f'❌ Ошибки: {errors}')"
 ```
 
-### Команды мониторинга
+### Команды мониторинга (ОБНОВЛЕНО 2025)
 
 ```bash
+# 🔧 НОВЫЕ команды мониторинга (2025):
+
+# Интерактивный дневник
+python utils/diary_viewer.py
+
+# Быстрый статус дня
+python -c "
+from modules.trading_diary import TradingDiary
+diary = TradingDiary()
+status = diary.get_current_day_status()
+print(f'📅 {status[\"date\"]}')
+print(f'💰 Баланс: ${status[\"current_balance\"]:.2f}')
+print(f'📈 Результат: ${status[\"daily_return\"]:.2f}')
+print(f'📊 Сделок: {status[\"completed_trades\"]}')
+"
+
+# 📊 СТАНДАРТНЫЕ команды:
+
 # Текущий статус
 python -c "from modules.trading_diary import TradingDiary; print(TradingDiary().get_current_day_status())"
 
@@ -914,79 +1086,116 @@ if os.path.exists(log_file):
 
 ## 🔧 Настройка PyCharm
 
-### Полезные конфигурации Run/Debug
+### Полезные конфигурации Run/Debug (ОБНОВЛЕНО 2025)
 
 1. **Основной бот:**
    - Script path: `main.py`
    - Working directory: `$ProjectFileDir$`
 
-2. **Диагностика:**
-   - Script path: `utils/simple_strategy_test.py`
+2. **🔧 Новая диагностика стратегии:**
+   - Script path: `utils/strategy_debug_tool.py`
+   - Parameters: `ETHUSDT`
    - Working directory: `$ProjectFileDir$`
 
-3. **Дневник:**
+3. **📊 Анализ логов:**
+   - Script path: `utils/log_analyzer.py`
+   - Working directory: `$ProjectFileDir$`
+
+4. **🎯 Оптимизация объемов:**
+   - Script path: `utils/volume_optimizer.py`
+   - Working directory: `$ProjectFileDir$`
+
+5. **📔 Дневник торговли:**
    - Script path: `utils/diary_viewer.py`
    - Working directory: `$ProjectFileDir$`
 
-4. **Отладка стратегии:**
-   - Script path: `utils/debug_strategy.py`
-   - Parameters: `--all`
+6. **🔍 Быстрая проверка:**
+   - Script path: `utils/simple_log_check.py`
    - Working directory: `$ProjectFileDir$`
 
-### Полезные External Tools
+7. **📊 Анализ результатов:**
+   - Script path: `check_results.py`
+   - Working directory: `$ProjectFileDir$`
+
+### Полезные External Tools (ОБНОВЛЕНО 2025)
 
 **Tools → External Tools → Add:**
 
-1. **Проверка конфигурации:**
+1. **🔧 Детальная отладка стратегии:**
    - Program: `python`
-   - Arguments: `user_config.py`
+   - Arguments: `utils/strategy_debug_tool.py ETHUSDT`
    - Working directory: `$ProjectFileDir$`
 
-2. **Просмотр дневника:**
+2. **📊 Анализ логов:**
    - Program: `python`
-   - Arguments: `utils/diary_viewer.py`
+   - Arguments: `utils/log_analyzer.py`
    - Working directory: `$ProjectFileDir$`
 
-3. **Анализ объемов:**
+3. **🎯 Оптимизация объемов:**
    - Program: `python`
    - Arguments: `utils/volume_optimizer.py`
    - Working directory: `$ProjectFileDir$`
 
+4. **📔 Просмотр дневника:**
+   - Program: `python`
+   - Arguments: `utils/diary_viewer.py`
+   - Working directory: `$ProjectFileDir$`
+
+5. **🔍 Быстрая проверка:**
+   - Program: `python`
+   - Arguments: `utils/simple_log_check.py`
+   - Working directory: `$ProjectFileDir$`
+
+6. **📊 Анализ результатов:**
+   - Program: `python`
+   - Arguments: `check_results.py`
+   - Working directory: `$ProjectFileDir$`
+
+7. **⚙️ Проверка конфигурации:**
+   - Program: `python`
+   - Arguments: `user_config.py`
+   - Working directory: `$ProjectFileDir$`
+
 ---
 
-## 📚 Полезные сочетания команд
+## 📚 Полезные сочетания команд (ОБНОВЛЕНО 2025)
 
-### Утренняя рутина
+### Утренняя рутина (НОВОЕ 2025)
 
 ```bash
+# 🔧 НОВАЯ утренняя рутина с инструментами 2025:
+
 # 1. Проверка результатов
 python utils/diary_viewer.py
 
-# 2. Анализ ошибок
-python -c "
-import os
-from datetime import datetime
-log_file = f'logs/trading_{datetime.now().strftime(\"%Y%m%d\")}.log'
-if os.path.exists(log_file):
-    with open(log_file, 'r', encoding='utf-8') as f:
-        content = f.read()
-        if 'ERROR' in content:
-            print('🚨 Найдены ошибки в логах!')
-        else:
-            print('✅ Ошибок не найдено')
-"
+# 2. Быстрая проверка логов
+python utils/simple_log_check.py
 
-# 3. Запуск на новый день
+# 3. При проблемах - детальная диагностика
+python utils/strategy_debug_tool.py ETHUSDT
+
+# 4. Анализ производительности
+python utils/log_analyzer.py
+
+# 5. Запуск на новый день
 python main.py
 ```
 
-### Еженедельный анализ
+### Еженедельный анализ (НОВОЕ 2025)
 
 ```bash
+# 🔧 НОВЫЙ еженедельный анализ с инструментами 2025:
+
 # 1. Недельная сводка
 python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_week()"
 
-# 2. Экспорт данных
+# 2. Анализ логов за неделю
+python utils/log_analyzer.py
+
+# 3. Оптимизация объемных фильтров
+python utils/volume_optimizer.py
+
+# 4. Экспорт данных
 python -c "
 from modules.trading_diary import TradingDiary
 diary = TradingDiary()
@@ -994,7 +1203,7 @@ export_path = diary.export_diary_to_csv(7)
 print(f'📊 Экспорт: {export_path}')
 "
 
-# 3. Бэкап
+# 5. Бэкап
 python -c "
 import shutil
 from datetime import datetime
@@ -1004,6 +1213,365 @@ print(f'💾 Еженедельный бэкап: {backup_name}')
 "
 ```
 
+### При критических проблемах (НОВОЕ 2025)
+
+```bash
+# 🚨 ЭКСТРЕННАЯ диагностика при убытках:
+
+# 1. Остановите бота (Ctrl+C)
+
+# 2. Полный анализ проблемы
+python check_results.py
+
+# 3. Просмотр дневника
+python utils/diary_viewer.py
+
+# 4. Детальная диагностика стратегии
+python utils/strategy_debug_tool.py ETHUSDT
+
+# 5. Анализ логов
+python utils/log_analyzer.py
+
+# 6. Создание отчета о проблеме
+python -c "
+print('🆘 ОТЧЕТ О ПРОБЛЕМЕ')
+print('=' * 40)
+
+# Основная информация
+from datetime import datetime
+print(f'Время: {datetime.now()}')
+
+# Конфигурация
+try:
+    from user_config import UserConfig
+    print(f'Стратегия: {UserConfig.SELECTED_STRATEGY}')
+    print(f'Риск: {UserConfig.RISK_SETTINGS[\"risk_per_trade\"]*100:.1f}%')
+    print(f'Плечо: {UserConfig.RISK_SETTINGS[\"max_leverage\"]}x')
+except Exception as e:
+    print(f'Ошибка конфигурации: {e}')
+
+# Последние результаты
+try:
+    from utils.diary_viewer import DiaryViewer
+    viewer = DiaryViewer()
+    status = viewer.get_current_day_status()
+    print(f'Дневной результат: ${status.get(\"daily_return\", 0):.2f}')
+    print(f'Сделок: {status.get(\"completed_trades\", 0)}')
+except Exception as e:
+    print(f'Ошибка дневника: {e}')
+
+print('=' * 40)
+" > problem_report_$(date +%Y%m%d).txt
+
+echo "📄 Отчет сохранен в problem_report_$(date +%Y%m%d).txt"
+```
+
+---
+
+## 🎯 Быстрые команды для разных задач (2025)
+
+### 🔧 **Диагностика проблем:**
+```bash
+# Быстрая оценка ситуации
+python utils/simple_log_check.py
+
+# Детальная диагностика
+python utils/strategy_debug_tool.py ETHUSDT
+
+# Анализ производительности
+python utils/log_analyzer.py
+
+# Оптимизация настроек
+python utils/volume_optimizer.py
+
+# Полный анализ
+python check_results.py
+```
+
+### 📊 **Мониторинг результатов:**
+```bash
+# Сегодняшние результаты
+python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_today()"
+
+# Недельная сводка
+python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_week()"
+
+# Статус дня
+python -c "
+from modules.trading_diary import TradingDiary
+diary = TradingDiary()
+status = diary.get_current_day_status()
+print(f'💰 Баланс: ${status[\"current_balance\"]:.2f}')
+print(f'📈 Результат: ${status[\"daily_return\"]:.2f}')
+print(f'📊 Сделок: {status[\"completed_trades\"]}')
+"
+```
+
+### ⚙️ **Настройка и конфигурация:**
+```bash
+# Проверка конфигурации
+python user_config.py
+
+# Список стратегий
+python user_config.py --strategies
+
+# Интерактивный выбор стратегии
+python utils/strategy_selector.py --interactive
+
+# Проверка активных пар
+python -c "
+from user_config import UserConfig
+enabled = UserConfig.get_enabled_pairs()
+for pair, config in enabled.items():
+    print(f'{pair}: {config[\"weight\"]*100:.0f}%, плечо {config[\"leverage\"]}x')
+"
+```
+
+### 🧪 **Тестирование:**
+```bash
+# Простое тестирование
+python utils/simple_strategy_test.py
+
+# Тест API
+python -c "from modules.data_fetcher import DataFetcher; print('✅ OK' if DataFetcher().health_check() else '❌ ERROR')"
+
+# Валидация стратегии
+python -c "
+from main import TradingBot
+bot = TradingBot()
+result = bot.run_strategy_validation()
+print(f'Валидация: {result.get(\"score\", 0)}/100')
+"
+```
+
+---
+
+## 🔧 Настройка PyCharm для работы с новыми инструментами
+
+### Создание Run Configurations для новых инструментов:
+
+1. **Run → Edit Configurations → Add New → Python**
+
+2. **Настройте конфигурации:**
+
+#### 🔧 **Strategy Debug Tool:**
+- Name: `Strategy Debug - ETHUSDT`
+- Script path: `utils/strategy_debug_tool.py`
+- Parameters: `ETHUSDT`
+- Working directory: `$ProjectFileDir$`
+
+#### 📊 **Log Analyzer:**
+- Name: `Log Analyzer`
+- Script path: `utils/log_analyzer.py`
+- Working directory: `$ProjectFileDir$`
+
+#### 🎯 **Volume Optimizer:**
+- Name: `Volume Optimizer`
+- Script path: `utils/volume_optimizer.py`
+- Working directory: `$ProjectFileDir$`
+
+#### 📔 **Diary Viewer:**
+- Name: `Diary Viewer`
+- Script path: `utils/diary_viewer.py`
+- Working directory: `$ProjectFileDir$`
+
+#### 🔍 **Quick Log Check:**
+- Name: `Quick Log Check`
+- Script path: `utils/simple_log_check.py`
+- Working directory: `$ProjectFileDir$`
+
+#### 📊 **Results Analyzer:**
+- Name: `Results Analyzer`
+- Script path: `check_results.py`
+- Working directory: `$ProjectFileDir$`
+
+### Настройка горячих клавиш:
+
+**File → Settings → Keymap → External Tools:**
+
+- **Ctrl+Alt+D** → Strategy Debug Tool
+- **Ctrl+Alt+L** → Log Analyzer
+- **Ctrl+Alt+V** → Volume Optimizer
+- **Ctrl+Alt+R** → Diary Viewer
+- **Ctrl+Alt+Q** → Quick Log Check
+- **Ctrl+Alt+A** → Results Analyzer
+
+---
+
+## 📚 Полезные сочетания команд для разных сценариев
+
+### 🚨 **При критических убытках:**
+```bash
+# 1. Остановите бота (Ctrl+C)
+
+# 2. Экстренный анализ
+python check_results.py
+python utils/diary_viewer.py
+
+# 3. Диагностика причин
+python utils/strategy_debug_tool.py ETHUSDT
+python utils/log_analyzer.py
+
+# 4. Создание безопасной конфигурации
+# Редактируйте user_config.py:
+# SELECTED_STRATEGY = 'smart_money'
+# RISK_SETTINGS = {'risk_per_trade': 0.001, 'max_leverage': 1}
+
+# 5. Валидация изменений
+python user_config.py
+
+# 6. Тестирование
+python utils/simple_strategy_test.py
+```
+
+### 🔍 **При отсутствии сигналов:**
+```bash
+# 1. Детальная диагностика
+python utils/strategy_debug_tool.py ETHUSDT
+
+# 2. Анализ объемных паттернов
+python utils/volume_optimizer.py
+
+# 3. Анализ логов
+python utils/log_analyzer.py
+
+# 4. Применение рекомендаций в user_config.py
+
+# 5. Тестирование изменений
+python utils/simple_strategy_test.py
+python main.py  # Тест на 1-2 часа
+```
+
+### 📊 **Еженедельная оптимизация:**
+```bash
+# 1. Анализ недели
+python -c "from utils.diary_viewer import DiaryViewer; DiaryViewer().show_week()"
+
+# 2. Анализ производительности
+python utils/log_analyzer.py
+
+# 3. Оптимизация фильтров
+python utils/volume_optimizer.py
+
+# 4. Детальная диагностика
+python utils/strategy_debug_tool.py ETHUSDT
+
+# 5. Экспорт данных
+python -c "
+from modules.trading_diary import TradingDiary
+diary = TradingDiary()
+export_path = diary.export_diary_to_csv(7)
+print(f'📊 Экспорт: {export_path}')
+"
+
+# 6. Бэкап конфигурации
+cp user_config.py user_config_backup_$(date +%Y%m%d).py
+```
+
+---
+
+## 🎯 Создание собственных команд
+
+### Создание пользовательского скрипта диагностики:
+
+```python
+# my_diagnosis.py
+def my_daily_check():
+    """Моя ежедневная проверка бота"""
+    print("🔍 МОЯ ЕЖЕДНЕВНАЯ ПРОВЕРКА")
+    print("=" * 40)
+    
+    # 1. Быстрая проверка
+    import subprocess
+    try:
+        result = subprocess.run(['python', 'utils/simple_log_check.py'], 
+                              capture_output=True, text=True)
+        print("📊 БЫСТРАЯ ПРОВЕРКА:")
+        print(result.stdout)
+    except:
+        print("❌ Ошибка быстрой проверки")
+    
+    # 2. Статус дня
+    try:
+        from modules.trading_diary import TradingDiary
+        diary = TradingDiary()
+        status = diary.get_current_day_status()
+        
+        print("📔 СТАТУС ДНЯ:")
+        print(f"   💰 Баланс: ${status['current_balance']:.2f}")
+        print(f"   📈 Результат: ${status['daily_return']:.2f}")
+        print(f"   📊 Сделок: {status['completed_trades']}")
+        
+        # Рекомендации
+        if status['daily_return'] < 0:
+            print("\n🚨 УБЫТОЧНЫЙ ДЕНЬ:")
+            print("   1. Запустите: python utils/strategy_debug_tool.py ETHUSDT")
+            print("   2. Проанализируйте: python utils/log_analyzer.py")
+            print("   3. Рассмотрите снижение рисков")
+        elif status['completed_trades'] == 0:
+            print("\n🔍 НЕТ СДЕЛОК:")
+            print("   1. Запустите: python utils/strategy_debug_tool.py ETHUSDT")
+            print("   2. Оптимизируйте: python utils/volume_optimizer.py")
+        else:
+            print("\n✅ ДЕНЬ ПРОШЕЛ НОРМАЛЬНО")
+            
+    except Exception as e:
+        print(f"❌ Ошибка анализа дня: {e}")
+
+if __name__ == "__main__":
+    my_daily_check()
+```
+
+### Добавление в PyCharm:
+- **Script path:** `my_diagnosis.py`
+- **Working directory:** `$ProjectFileDir$`
+- **Горячая клавиша:** `Ctrl+Alt+M`
+
 ---
 
 **🎯 Сохраните этот файл в закладки PyCharm для быстрого доступа к командам!**
+
+### 🔧 **Быстрый доступ к новым инструментам (2025):**
+```bash
+python utils/strategy_debug_tool.py ETHUSDT  # Детальная отладка
+python utils/log_analyzer.py                # Анализ логов
+python utils/volume_optimizer.py            # Оптимизация
+python utils/diary_viewer.py                # Дневник
+python utils/simple_log_check.py            # Быстрая проверка
+python check_results.py                     # Анализ результатов
+```
+
+### 🛡️ **Безопасные команды для новичков:**
+```bash
+# Проверка конфигурации
+python user_config.py
+
+# Простое тестирование
+python utils/simple_strategy_test.py
+
+# Быстрая проверка
+python utils/simple_log_check.py
+
+# Просмотр результатов
+python utils/diary_viewer.py
+```
+
+### 🎯 **Команды для оптимизации:**
+```bash
+# Детальная диагностика
+python utils/strategy_debug_tool.py ETHUSDT
+
+# Анализ производительности
+python utils/log_analyzer.py
+
+# Оптимизация фильтров
+python utils/volume_optimizer.py
+
+# Применение изменений
+python user_config.py  # Валидация
+python main.py         # Тестирование
+```
+
+---
+
+**🚀 Используйте новые инструменты 2025 года для эффективной работы с торговым ботом!**

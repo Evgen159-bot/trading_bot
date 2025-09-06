@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Исправленный скрипт для настройки торгового бота
+Исправленный скрипт для настройки торгового бота (2025)
 Создает все необходимые директории, файлы конфигурации и проверяет зависимости
 """
 
@@ -36,7 +36,7 @@ class BotSetup:
     def print_header(self):
         """Печать заголовка"""
         print("\n" + "=" * 70)
-        print("🚀 BYBIT TRADING BOT SETUP")
+        print("🚀 BYBIT TRADING BOT SETUP (2025)")
         print("=" * 70)
         print(f"🖥️  Platform: {platform.system()} {platform.release()}")
         print(f"🐍 Python: {sys.version.split()[0]}")
@@ -94,8 +94,8 @@ class BotSetup:
             'logs/telegram',
             'logs/trades',
             'logs/validation',
+            'logs/trading_diary',
             'modules',
-            'performance_data',
             'strategies',
             'tests',
             'utils',
@@ -137,8 +137,8 @@ BYBIT_TESTNET=True
 
 # Bot Configuration
 CYCLE_INTERVAL=60
-MAX_POSITIONS=3
-RISK_PER_TRADE=0.02
+MAX_POSITIONS=4
+RISK_PER_TRADE=0.005
 
 # Logging Level (DEBUG, INFO, WARNING, ERROR)
 LOG_LEVEL=INFO
@@ -277,7 +277,7 @@ Thumbs.db
         if platform.system() == "Windows":
             bat_content = """@echo off
 chcp 65001 >nul
-echo Starting ByBit Trading Bot...
+echo Starting ByBit Trading Bot (2025)...
 echo.
 
 REM Проверка виртуального окружения
@@ -297,6 +297,10 @@ REM Установка зависимостей
 echo Installing dependencies...
 pip install -r requirements.txt
 
+REM Проверка конфигурации
+echo Checking configuration...
+python user_config.py
+
 REM Запуск бота
 echo Starting bot...
 python main.py
@@ -313,7 +317,7 @@ pause
         # Unix shell script
         else:
             sh_content = """#!/bin/bash
-echo "Starting ByBit Trading Bot..."
+echo "Starting ByBit Trading Bot (2025)..."
 echo
 
 # Проверка виртуального окружения
@@ -333,6 +337,10 @@ python -m pip install --upgrade pip
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
+# Проверка конфигурации
+echo "Checking configuration..."
+python user_config.py
+
 # Запуск бота
 echo "Starting bot..."
 python main.py
@@ -340,7 +348,10 @@ python main.py
             try:
                 script_file = self.project_root / 'start_bot.sh'
                 script_file.write_text(sh_content, encoding='utf-8')
-                script_file.chmod(0o755)  # Делаем исполняемым
+                try:
+                    script_file.chmod(0o755)  # Делаем исполняемым
+                except AttributeError:
+                    print("⚠️  chmod not available, you may need to run: chmod +x start_bot.sh")
                 print("✅ start_bot.sh created")
             except Exception as e:
                 self.warnings.append(f"Failed to create start_bot.sh: {e}")
@@ -402,13 +413,16 @@ python main.py
     def install_packages_individually(self):
         """Установка пакетов по одному"""
         packages = [
-            'pandas>=1.5.0',
-            'numpy>=1.21.0',
+            'pandas>=2.1.4',
+            'numpy>=1.26.2',
             'pybit>=5.6.0',
-            'python-dotenv>=0.19.0',
-            'ta>=0.10.2',
-            'requests>=2.28.0',
-            'colorlog>=6.7.0'
+            'python-dotenv>=1.0.0',
+            'ta>=0.11.0',
+            'requests>=2.31.0',
+            'colorlog>=6.8.0',
+            'aiohttp>=3.9.1',
+            'tqdm>=4.66.1',
+            'rich>=13.7.0'
         ]
 
         for package in packages:
@@ -428,22 +442,38 @@ python main.py
 
     def create_requirements_file(self):
         """Создание файла requirements.txt"""
-        requirements_content = """# Trading Bot Requirements
+        requirements_content = """# Trading Bot Requirements (2025) - Проверенные версии
 
-# Core dependencies
-pandas>=1.5.0
-numpy>=1.21.0
+# Core dependencies (ОБЯЗАТЕЛЬНЫЕ)
+pandas>=2.1.4
+numpy>=1.26.2
 pybit>=5.6.0
-python-dotenv>=0.19.0
+python-dotenv>=1.0.0
 
-# Technical Analysis
-ta>=0.10.2
+# Technical Analysis (КРИТИЧЕСКИ ВАЖНО)
+ta>=0.11.0
 
-# HTTP requests
-requests>=2.28.0
+# HTTP requests and async
+requests>=2.31.0
+aiohttp>=3.9.1
 
 # Logging and utilities
-colorlog>=6.7.0
+colorlog>=6.8.0
+tqdm>=4.66.1
+
+# Rich console output
+rich>=13.7.0
+
+# Optional dependencies for advanced features
+matplotlib>=3.8.2
+plotly>=5.17.0
+
+# For notifications (optional)
+python-telegram-bot>=20.7
+
+# For testing
+pytest>=7.4.3
+pytest-asyncio>=0.21.1
 """
         try:
             requirements_file = self.project_root / 'requirements.txt'
@@ -495,15 +525,23 @@ colorlog>=6.7.0
 
         required_files = [
             'main.py',
-            'config/trading_config.py',
+            'user_config.py',
+            'config_loader.py',
             'modules/data_fetcher.py',
             'modules/market_analyzer.py',
             'modules/order_manager.py',
             'modules/position_manager.py',
             'modules/risk_manager.py',
             'modules/performance_tracker.py',
+            'modules/trading_diary.py',
             'strategies/base_strategy.py',
-            'strategies/multi_indicator_strategy.py'
+            'strategies/custom_strategy.py',
+            'strategies/strategy_factory.py',
+            'utils/diary_viewer.py',
+            'utils/strategy_debug_tool.py',
+            'utils/log_analyzer.py',
+            'utils/volume_optimizer.py',
+            'utils/simple_log_check.py'
         ]
 
         missing_files = []
@@ -550,8 +588,9 @@ colorlog>=6.7.0
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
-      <excludeFolder url="file://$MODULE_DIR$/performance_data" />
       <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/exports" />
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -573,14 +612,21 @@ colorlog>=6.7.0
         if not self.errors:
             print("🎉 Setup completed successfully!")
             print("\n✅ Next steps:")
-            print("1. Edit config/config.env with your ByBit API keys")
-            print("2. Review trading parameters in config/trading_config.py")
+            print("1. Edit user_config.py with your ByBit API keys")
+            print("2. Review trading parameters")
             print("3. Run the bot: python main.py")
 
             if platform.system() == "Windows":
                 print("   Or double-click: start_bot.bat")
             else:
                 print("   Or run: ./start_bot.sh")
+
+            print("\n🔧 New diagnostic tools (2025):")
+            print("   python utils/strategy_debug_tool.py ETHUSDT  # Detailed debugging")
+            print("   python utils/log_analyzer.py                # Log analysis")
+            print("   python utils/volume_optimizer.py            # Volume optimization")
+            print("   python utils/simple_log_check.py            # Quick check")
+            print("   python check_results.py                     # Results analysis")
 
         else:
             print("⚠️  Setup completed with errors:")
@@ -595,7 +641,8 @@ colorlog>=6.7.0
         print("\n📚 Useful commands:")
         print("   - python main.py                    # Запуск бота")
         print("   - python utils/diary_viewer.py      # Просмотр дневника")
-        print("   - pip install ta python-dotenv     # Установка недостающих модулей")
+        print("   - python user_config.py             # Проверка конфигурации")
+        print("   - python utils/simple_log_check.py  # Быстрая проверка")
 
         print("\n🆘 Support:")
         print("   - Check logs/ directory for detailed logs")
@@ -650,7 +697,7 @@ def main():
             # Дополнительные инструкции для Windows
             if platform.system() == "Windows":
                 print("\n💡 Quick fix for missing modules:")
-                print("   pip install ta python-dotenv")
+                print("   pip install ta python-dotenv pandas numpy pybit")
 
             sys.exit(1)
 

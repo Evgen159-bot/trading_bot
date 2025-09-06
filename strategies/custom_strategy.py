@@ -29,8 +29,8 @@ class CustomStrategy(BaseStrategy):
         rsi_settings = self.config.get('rsi_settings', {})
         self.RSI_PERIOD = rsi_settings.get('period', 14)
         self.RSI_OVERSOLD_LOWER = rsi_settings.get('oversold_lower', 25)
-        self.RSI_OVERSOLD_UPPER = rsi_settings.get('oversold_upper', 35)
-        self.RSI_OVERBOUGHT_LOWER = rsi_settings.get('overbought_lower', 65)
+        self.RSI_OVERSOLD_UPPER = rsi_settings.get('oversold_upper', 45)
+        self.RSI_OVERBOUGHT_LOWER = rsi_settings.get('overbought_lower', 55)
         self.RSI_OVERBOUGHT_UPPER = rsi_settings.get('overbought_upper', 75)
         self.RSI_ENABLED = rsi_settings.get('enabled', True)
         self.RSI_WEIGHT = rsi_settings.get('weight', 1.0)
@@ -62,7 +62,7 @@ class CustomStrategy(BaseStrategy):
         # Параметры объема
         volume_settings = self.config.get('volume_settings', {})
         self.VOLUME_SMA_PERIOD = volume_settings.get('sma_period', 20)
-        self.MIN_VOLUME_RATIO = volume_settings.get('min_ratio', 1.1)
+        self.MIN_VOLUME_RATIO = volume_settings.get('min_ratio', 0.8)
         self.VOLUME_SURGE_THRESHOLD = volume_settings.get('surge_threshold', 2.5)
         self.VOLUME_ENABLED = volume_settings.get('enabled', True)
         self.VOLUME_WEIGHT = volume_settings.get('weight', 0.7)
@@ -87,10 +87,10 @@ class CustomStrategy(BaseStrategy):
 
         # Условия входа
         entry_conditions = self.config.get('entry_conditions', {})
-        self.MIN_CONDITIONS_REQUIRED = entry_conditions.get('min_conditions_required', 3)
+        self.MIN_CONDITIONS_REQUIRED = entry_conditions.get('min_conditions_required', 2)
         self.TREND_STRENGTH_THRESHOLD = entry_conditions.get('trend_strength_threshold', 0.3)
         self.VOLUME_CONFIRMATION = entry_conditions.get('volume_confirmation', True)
-        self.SIGNAL_COOLDOWN = entry_conditions.get('signal_cooldown', 300)
+        self.SIGNAL_COOLDOWN = entry_conditions.get('signal_cooldown', 1800)
 
         # Условия выхода
         exit_conditions = self.config.get('exit_conditions', {})
@@ -102,12 +102,12 @@ class CustomStrategy(BaseStrategy):
 
         # Управление рисками
         risk_mgmt = self.config.get('risk_management', {})
-        self.RISK_PER_TRADE = risk_mgmt.get('risk_per_trade', 0.015)
-        self.MAX_STOP_LOSS_PERCENT = risk_mgmt.get('max_stop_loss_pct', 0.08)
-        self.MIN_TAKE_PROFIT_PERCENT = risk_mgmt.get('min_take_profit_pct', 0.12)
-        self.MAX_TAKE_PROFIT_PERCENT = risk_mgmt.get('max_take_profit_pct', 0.25)
-        self.LEVERAGE = risk_mgmt.get('leverage', 3)
-        self.MAX_POSITION_VALUE_PCT = risk_mgmt.get('max_position_value_pct', 0.3)
+        self.RISK_PER_TRADE = risk_mgmt.get('risk_per_trade', 0.005)
+        self.MAX_STOP_LOSS_PERCENT = risk_mgmt.get('max_stop_loss_pct', 0.03)
+        self.MIN_TAKE_PROFIT_PERCENT = risk_mgmt.get('min_take_profit_pct', 0.06)
+        self.MAX_TAKE_PROFIT_PERCENT = risk_mgmt.get('max_take_profit_pct', 0.10)
+        self.LEVERAGE = risk_mgmt.get('leverage', 5)
+        self.MAX_POSITION_VALUE_PCT = risk_mgmt.get('max_position_value_pct', 0.05)
 
         # Статистика
         self.last_signal_time = None
@@ -180,10 +180,15 @@ class CustomStrategy(BaseStrategy):
                 self.logger.warning(f"No signals generated for {symbol} - failed to calculate indicators")
                 return None
 
-            self.logger.info(f"Generated signals for {symbol}: RSI={signals.get('rsi', 0):.1f}, "
-                             f"Volume={signals.get('volume_ratio', 0):.2f}, "
-                             f"MACD={signals.get('macd', 0):.6f}, "
-                             f"EMA_Fast={signals.get('ema_fast', 0):.2f}")
+            # Детальное логирование сигналов
+            self.logger.info(f"Generated signals for {symbol}:")
+            self.logger.info(f"  RSI: {signals.get('rsi', 0):.1f}")
+            self.logger.info(f"  Volume Ratio: {signals.get('volume_ratio', 0):.2f}")
+            self.logger.info(f"  MACD: {signals.get('macd', 0):.6f}")
+            self.logger.info(f"  MACD Signal: {signals.get('macd_signal', 0):.6f}")
+            self.logger.info(f"  EMA Fast: {signals.get('ema_fast', 0):.2f}")
+            self.logger.info(f"  EMA Slow: {signals.get('ema_slow', 0):.2f}")
+            self.logger.info(f"  Current Price: ${signals.get('close', 0):.4f}")
 
             if current_position:
                 self.logger.info(f"Existing position found for {symbol}, checking exit conditions")
@@ -323,7 +328,7 @@ class CustomStrategy(BaseStrategy):
             conditions_met = 0
             reasons = []
 
-            self.logger.info(f"Checking long entry conditions with {len(signals)} signals")
+            self.logger.debug(f"Checking long entry conditions with {len(signals)} signals")
 
             # 1. RSI условие
             if self.RSI_ENABLED and 'rsi' in signals:
@@ -334,12 +339,12 @@ class CustomStrategy(BaseStrategy):
                         rsi < self.RSI_OVERSOLD_UPPER or
                         (rsi > rsi_prev and rsi < 50)
                 )
-                self.logger.info(f"RSI check: {rsi:.1f} (prev={rsi_prev:.1f}) -> {'✅' if rsi_bullish else '❌'}")
+                self.logger.debug(f"RSI check: {rsi:.1f} (prev={rsi_prev:.1f}) -> {'✅' if rsi_bullish else '❌'}")
                 if rsi_bullish:
                     conditions_met += self.RSI_WEIGHT
                     reasons.append("RSI_BULLISH")
                 else:
-                    self.logger.info(f"RSI condition failed: {rsi:.1f} not < {self.RSI_OVERSOLD_UPPER} and not rising")
+                    self.logger.debug(f"RSI condition failed: {rsi:.1f} not < {self.RSI_OVERSOLD_UPPER} and not rising")
 
             # 2. MACD условие
             if self.MACD_ENABLED and all(k in signals for k in ['macd', 'macd_signal', 'macd_histogram']):
@@ -347,13 +352,14 @@ class CustomStrategy(BaseStrategy):
                         signals['macd'] > signals['macd_signal'] or
                         signals['macd_histogram'] > self.MACD_THRESHOLD
                 )
-                self.logger.info(
+                self.logger.debug(
                     f"MACD check: {signals['macd']:.6f} vs {signals['macd_signal']:.6f} -> {'✅' if macd_bullish else '❌'}")
                 if macd_bullish:
                     conditions_met += self.MACD_WEIGHT
                     reasons.append("MACD_BULLISH")
                 else:
-                    self.logger.info(f"MACD condition failed: {signals['macd']:.6f} not > {signals['macd_signal']:.6f}")
+                    self.logger.debug(
+                        f"MACD condition failed: {signals['macd']:.6f} not > {signals['macd_signal']:.6f}")
 
             # 3. EMA тренд
             if self.EMA_ENABLED and all(k in signals for k in ['ema_fast', 'ema_slow', 'ema_trend', 'close']):
@@ -361,13 +367,13 @@ class CustomStrategy(BaseStrategy):
                         signals['ema_fast'] > signals['ema_slow'] or
                         signals['close'] > signals['ema_trend']
                 )
-                self.logger.info(
+                self.logger.debug(
                     f"EMA check: fast={signals['ema_fast']:.2f} vs slow={signals['ema_slow']:.2f} -> {'✅' if ema_bullish else '❌'}")
                 if ema_bullish:
                     conditions_met += self.EMA_WEIGHT
                     reasons.append("EMA_BULLISH")
                 else:
-                    self.logger.info(f"EMA condition failed: fast not > slow and price not > trend")
+                    self.logger.debug(f"EMA condition failed: fast not > slow and price not > trend")
 
             # 4. Bollinger Bands
             if self.BB_ENABLED and all(k in signals for k in ['bb_lower', 'bb_middle', 'close', 'close_prev']):
@@ -379,18 +385,18 @@ class CustomStrategy(BaseStrategy):
                     conditions_met += self.BB_WEIGHT
                     reasons.append("BB_BULLISH")
                 else:
-                    self.logger.info(f"BB condition failed: no bounce or above middle")
+                    self.logger.debug(f"BB condition failed: no bounce or above middle")
 
             # 5. Объем
             if self.VOLUME_ENABLED and 'volume_ratio' in signals:
                 volume_ok = signals['volume_ratio'] > self.MIN_VOLUME_RATIO
-                self.logger.info(
+                self.logger.debug(
                     f"Volume check: {signals['volume_ratio']:.2f} vs {self.MIN_VOLUME_RATIO} -> {'✅' if volume_ok else '❌'}")
                 if volume_ok:
                     conditions_met += self.VOLUME_WEIGHT
                     reasons.append("VOLUME_OK")
                 else:
-                    self.logger.info(
+                    self.logger.debug(
                         f"Volume condition failed: {signals['volume_ratio']:.2f} not > {self.MIN_VOLUME_RATIO}")
 
             # 6. Stochastic
@@ -399,13 +405,13 @@ class CustomStrategy(BaseStrategy):
                         signals['stoch_k'] < self.STOCH_OVERSOLD or
                         (signals['stoch_k'] > signals['stoch_d'] and signals['stoch_k'] < 70)
                 )
-                self.logger.info(
+                self.logger.debug(
                     f"Stoch check: K={signals['stoch_k']:.1f}, D={signals['stoch_d']:.1f} -> {'✅' if stoch_bullish else '❌'}")
                 if stoch_bullish:
                     conditions_met += self.STOCH_WEIGHT
                     reasons.append("STOCH_BULLISH")
                 else:
-                    self.logger.info(f"Stoch condition failed: not oversold and no bullish cross")
+                    self.logger.debug(f"Stoch condition failed: not oversold and no bullish cross")
 
             is_valid = conditions_met >= self.MIN_CONDITIONS_REQUIRED
             reason_str = ", ".join(reasons) if reasons else "NONE"
@@ -425,7 +431,7 @@ class CustomStrategy(BaseStrategy):
             conditions_met = 0
             reasons = []
 
-            self.logger.info(f"Checking short entry conditions with {len(signals)} signals")
+            self.logger.debug(f"Checking short entry conditions with {len(signals)} signals")
 
             # 1. RSI условие
             if self.RSI_ENABLED and 'rsi' in signals:
@@ -436,12 +442,12 @@ class CustomStrategy(BaseStrategy):
                         rsi > self.RSI_OVERBOUGHT_LOWER or
                         (rsi < rsi_prev and rsi > 50)
                 )
-                self.logger.info(f"RSI check: {rsi:.1f} (prev={rsi_prev:.1f}) -> {'✅' if rsi_bearish else '❌'}")
+                self.logger.debug(f"RSI check: {rsi:.1f} (prev={rsi_prev:.1f}) -> {'✅' if rsi_bearish else '❌'}")
                 if rsi_bearish:
                     conditions_met += self.RSI_WEIGHT
                     reasons.append("RSI_BEARISH")
                 else:
-                    self.logger.info(
+                    self.logger.debug(
                         f"RSI condition failed: {rsi:.1f} not > {self.RSI_OVERBOUGHT_LOWER} and not falling")
 
             # 2. MACD условие
@@ -450,13 +456,14 @@ class CustomStrategy(BaseStrategy):
                         signals['macd'] < signals['macd_signal'] or
                         signals['macd_histogram'] < -self.MACD_THRESHOLD
                 )
-                self.logger.info(
+                self.logger.debug(
                     f"MACD check: {signals['macd']:.6f} vs {signals['macd_signal']:.6f} -> {'✅' if macd_bearish else '❌'}")
                 if macd_bearish:
                     conditions_met += self.MACD_WEIGHT
                     reasons.append("MACD_BEARISH")
                 else:
-                    self.logger.info(f"MACD condition failed: {signals['macd']:.6f} not < {signals['macd_signal']:.6f}")
+                    self.logger.debug(
+                        f"MACD condition failed: {signals['macd']:.6f} not < {signals['macd_signal']:.6f}")
 
             # 3. EMA тренд
             if self.EMA_ENABLED and all(k in signals for k in ['ema_fast', 'ema_slow', 'ema_trend', 'close']):
@@ -464,13 +471,13 @@ class CustomStrategy(BaseStrategy):
                         signals['ema_fast'] < signals['ema_slow'] or
                         signals['close'] < signals['ema_trend']
                 )
-                self.logger.info(
+                self.logger.debug(
                     f"EMA check: fast={signals['ema_fast']:.2f} vs slow={signals['ema_slow']:.2f} -> {'✅' if ema_bearish else '❌'}")
                 if ema_bearish:
                     conditions_met += self.EMA_WEIGHT
                     reasons.append("EMA_BEARISH")
                 else:
-                    self.logger.info(f"EMA condition failed: fast not < slow and price not < trend")
+                    self.logger.debug(f"EMA condition failed: fast not < slow and price not < trend")
 
             # 4. Bollinger Bands
             if self.BB_ENABLED and all(k in signals for k in ['bb_upper', 'bb_middle', 'close', 'close_prev']):
@@ -482,18 +489,18 @@ class CustomStrategy(BaseStrategy):
                     conditions_met += self.BB_WEIGHT
                     reasons.append("BB_BEARISH")
                 else:
-                    self.logger.info(f"BB condition failed: no rejection or below middle")
+                    self.logger.debug(f"BB condition failed: no rejection or below middle")
 
             # 5. Объем
             if self.VOLUME_ENABLED and 'volume_ratio' in signals:
                 volume_ok = signals['volume_ratio'] > self.MIN_VOLUME_RATIO
-                self.logger.info(
+                self.logger.debug(
                     f"Volume check: {signals['volume_ratio']:.2f} vs {self.MIN_VOLUME_RATIO} -> {'✅' if volume_ok else '❌'}")
-                if signals['volume_ratio'] > self.MIN_VOLUME_RATIO:
+                if volume_ok:
                     conditions_met += self.VOLUME_WEIGHT
                     reasons.append("VOLUME_OK")
                 else:
-                    self.logger.info(
+                    self.logger.debug(
                         f"Volume condition failed: {signals['volume_ratio']:.2f} not > {self.MIN_VOLUME_RATIO}")
 
             # 6. Stochastic
@@ -502,13 +509,13 @@ class CustomStrategy(BaseStrategy):
                         signals['stoch_k'] > self.STOCH_OVERBOUGHT or
                         (signals['stoch_k'] < signals['stoch_d'] and signals['stoch_k'] > 30)
                 )
-                self.logger.info(
+                self.logger.debug(
                     f"Stoch check: K={signals['stoch_k']:.1f}, D={signals['stoch_d']:.1f} -> {'✅' if stoch_bearish else '❌'}")
                 if stoch_bearish:
                     conditions_met += self.STOCH_WEIGHT
                     reasons.append("STOCH_BEARISH")
                 else:
-                    self.logger.info(f"Stoch condition failed: not overbought and no bearish cross")
+                    self.logger.debug(f"Stoch condition failed: not overbought and no bearish cross")
 
             is_valid = conditions_met >= self.MIN_CONDITIONS_REQUIRED
             reason_str = ", ".join(reasons) if reasons else "NONE"
@@ -525,11 +532,25 @@ class CustomStrategy(BaseStrategy):
     def _calculate_trade_parameters(self, entry_price: float, atr: float, direction: str) -> Dict[str, float]:
         """Расчет параметров сделки на основе пользовательских настроек"""
         try:
-            if entry_price <= 0 or atr <= 0:
-                self.logger.error(f"Invalid parameters: EntryPrice={entry_price}, ATR={atr}")
+            if entry_price <= 0:
+                self.logger.error(f"Неверная цена входа: {entry_price}")
                 return {'stop_loss': 0.0, 'take_profit': 0.0}
 
-            # Базовые расстояния на основе ATR
+            # Если ATR = 0, используем процентный метод
+            if atr <= 0:
+                self.logger.warning(f"ATR = 0, используем процентный метод")
+                if direction == 'BUY':
+                    return {
+                        'stop_loss': entry_price * (1 - 0.03),  # 3% стоп-лосс
+                        'take_profit': entry_price * (1 + 0.06)  # 6% тейк-профит
+                    }
+                else:  # SELL
+                    return {
+                        'stop_loss': entry_price * (1 + 0.03),  # 3% стоп-лосс
+                        'take_profit': entry_price * (1 - 0.06)  # 6% тейк-профит
+                    }
+
+            # Расстояния на основе ATR
             atr_sl_distance = atr * self.ATR_SL_MULTIPLIER
             atr_tp_distance = atr * self.ATR_TP_MULTIPLIER
 
@@ -543,25 +564,37 @@ class CustomStrategy(BaseStrategy):
                 self.logger.error(f"Unknown direction: {direction}")
                 return {'stop_loss': 0.0, 'take_profit': 0.0}
 
-            # Применяем пользовательские ограничения
+            # Ограничения для безопасности
             max_sl_distance = entry_price * self.MAX_STOP_LOSS_PERCENT
             min_tp_distance = entry_price * self.MIN_TAKE_PROFIT_PERCENT
             max_tp_distance = entry_price * self.MAX_TAKE_PROFIT_PERCENT
 
             if direction == 'BUY':
                 calculated_stop_loss = max(calculated_stop_loss, entry_price - max_sl_distance)
-                min_tp = entry_price + min_tp_distance
-                max_tp = entry_price + max_tp_distance
-                calculated_take_profit = max(min_tp, min(calculated_take_profit, max_tp))
+                calculated_take_profit = max(entry_price + min_tp_distance,
+                                             min(calculated_take_profit, entry_price + max_tp_distance))
             else:  # SELL
                 calculated_stop_loss = min(calculated_stop_loss, entry_price + max_sl_distance)
-                min_tp = entry_price - min_tp_distance
-                max_tp = entry_price - max_tp_distance
-                calculated_take_profit = min(min_tp, max(calculated_take_profit, max_tp))
+                calculated_take_profit = min(entry_price - min_tp_distance,
+                                             max(calculated_take_profit, entry_price - max_tp_distance))
 
-            # Финальная проверка
-            calculated_stop_loss = max(0.01, calculated_stop_loss)
-            calculated_take_profit = max(0.01, calculated_take_profit)
+            # Проверка R:R соотношения
+            risk = abs(entry_price - calculated_stop_loss)
+            reward = abs(calculated_take_profit - entry_price)
+
+            if risk > 0:
+                rr_ratio = reward / risk
+                if rr_ratio < 1.5:  # Минимум 1.5:1
+                    self.logger.warning(f"Плохое R:R соотношение: {rr_ratio:.2f}")
+                    return {'stop_loss': 0.0, 'take_profit': 0.0}
+
+            self.logger.info(f"📊 Параметры сделки {direction}:")
+            self.logger.info(f"   💵 Вход: ${entry_price:.4f}")
+            self.logger.info(
+                f"   🛑 Стоп: ${calculated_stop_loss:.4f} ({abs(entry_price - calculated_stop_loss) / entry_price * 100:.1f}%)")
+            self.logger.info(
+                f"   🎯 Цель: ${calculated_take_profit:.4f} ({abs(calculated_take_profit - entry_price) / entry_price * 100:.1f}%)")
+            self.logger.info(f"   📊 R:R: {reward / risk:.2f}:1")
 
             return {
                 'stop_loss': round(calculated_stop_loss, 8),
@@ -583,13 +616,18 @@ class CustomStrategy(BaseStrategy):
             account_balance = market_data.get('account_balance')
 
             if not all([current_price, account_balance]):
-                self.logger.warning(f"Missing data for {symbol}: price={current_price}, balance={account_balance}")
+                self.logger.warning(f"Отсутствуют данные для {symbol}: цена={current_price}, баланс={account_balance}")
                 return None
 
             position_size = self.calculate_position_size(account_balance, current_price)
             if position_size <= 0:
                 self.logger.warning(f"Invalid position size {position_size} for {symbol}")
                 return None
+
+            self.logger.info(f"🎯 ПОПЫТКА ОТКРЫТЬ ПОЗИЦИЮ для {symbol}:")
+            self.logger.info(f"   💰 Баланс: ${account_balance:.2f}")
+            self.logger.info(f"   📊 Размер позиции: {position_size}")
+            self.logger.info(f"   💵 Цена входа: ${current_price:.4f}")
 
             # Проверяем условия для лонга
             long_valid, long_score, long_reasons = self._check_long_entry_conditions(signals)
@@ -736,20 +774,38 @@ class CustomStrategy(BaseStrategy):
     def calculate_position_size(self, account_balance: float, current_price: float) -> float:
         """Расчет размера позиции на основе пользовательских настроек"""
         try:
-            if account_balance <= 0 or current_price <= 0:
+            # Используем fallback баланс если API не работает
+            if account_balance <= 0:
+                account_balance = 1100.0  # Fallback баланс
+                self.logger.warning(f"Используем fallback баланс: ${account_balance}")
+
+            if current_price <= 0:
+                self.logger.error(f"Неверная цена: {current_price}")
                 return 0.0
 
-            # Базовый расчет
-            risk_amount = account_balance * self.RISK_PER_TRADE
-            position_size = (risk_amount * self.LEVERAGE) / current_price
+            # Безопасный расчет размера позиции
+            risk_amount = account_balance * self.RISK_PER_TRADE  # 0.5% от баланса
 
-            # Ограничения
-            max_position_value = account_balance * self.MAX_POSITION_VALUE_PCT
+            # Размер позиции БЕЗ плеча (плечо применяется биржей)
+            position_size = risk_amount / current_price
+
+            # Ограничение: максимум $50 на позицию
+            max_position_value = 50.0  # Максимум $50 на позицию
             if position_size * current_price > max_position_value:
                 position_size = max_position_value / current_price
+                self.logger.info(f"   ⚠️ Размер ограничен до $50: {position_size:.8f}")
 
-            # Минимальный размер
-            position_size = max(0.001, position_size)
+            self.logger.info(f"📊 Расчет позиции:")
+            self.logger.info(f"   💰 Баланс: ${account_balance:.2f}")
+            self.logger.info(f"   🎯 Риск: {self.RISK_PER_TRADE * 100:.1f}% = ${risk_amount:.2f}")
+            self.logger.info(f"   💵 Цена: ${current_price:.4f}")
+            self.logger.info(f"   📏 Размер: {position_size:.8f}")
+
+            # Минимальные и максимальные размеры
+            position_size = max(0.001, min(position_size, 10.0))  # От 0.001 до 10
+
+            final_value = position_size * current_price
+            self.logger.info(f"   💵 Итоговая стоимость: ${final_value:.2f}")
 
             return round(position_size, 8)
 

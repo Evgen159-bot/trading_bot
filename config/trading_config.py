@@ -32,9 +32,9 @@ class TradingConfig:
     # Настройки риск-менеджмента
     RISK_MANAGEMENT = {
         'max_daily_loss': 0.05,  # 5% максимальная дневная потеря
-        'risk_per_trade': 0.01,  # 1% риск на сделку
+        'risk_per_trade': 0.005,  # 0.5% риск на сделку
         'max_positions': 4,  # Максимум открытых позиций
-        'max_daily_trades': 10,  # Максимум сделок в день
+        'max_daily_trades': 32,  # Максимум сделок в день (8 на пару)
         'min_risk_reward': 1.5,  # Минимальное соотношение риск/прибыль
         'max_leverage': 5,  # Максимальное плечо
         'emergency_stop_loss': 0.10,  # Экстренный стоп-лосс 10%
@@ -42,7 +42,7 @@ class TradingConfig:
         'position_sizing': {
             'method': 'risk_based',  # Метод расчета размера позиции
             'default_size': 0.1,  # Размер по умолчанию
-            'max_position_value': 1000,  # Максимальная стоимость позиции
+            'max_position_value': 50,  # Максимальная стоимость позиции
             'min_position_value': 10  # Минимальная стоимость позиции
         }
     }
@@ -72,8 +72,8 @@ class TradingConfig:
             'leverage': 5,  # Плечо
             'min_position': 0.001,  # Минимальный размер позиции
             'max_position': 5.0,  # Максимальный размер позиции
-            'stop_loss_pct': 0.02,  # Стоп-лосс в процентах
-            'take_profit_pct': 0.04,  # Тейк-профит в процентах
+            'stop_loss_pct': 0.025,  # 2.5% стоп-лосс
+            'take_profit_pct': 0.05,  # 5% тейк-профит
             'tick_size': 0.01,  # Минимальный шаг цены
             'lot_size': 0.001,  # Минимальный размер лота
             'max_slippage': 0.001,  # Максимальное проскальзывание
@@ -82,28 +82,41 @@ class TradingConfig:
         'SOLUSDT': {
             'weight': 0.25,
             'min_volume': 50000,
-            'leverage': 3,
+            'leverage': 5,
             'min_position': 0.01,
             'max_position': 10.0,
-            'stop_loss_pct': 0.025,
-            'take_profit_pct': 0.05,
+            'stop_loss_pct': 0.03,  # 3% стоп-лосс (SOL волатильнее)
+            'take_profit_pct': 0.06,  # 6% тейк-профит
             'tick_size': 0.001,
             'lot_size': 0.01,
             'max_slippage': 0.002,
             'priority': 'high'
         },
+        'BTCUSDT': {
+            'weight': 0.25,
+            'min_volume': 200000,  # Высокий объем для BTC
+            'leverage': 5,  # Плечо 5x
+            'min_position': 0.0001,
+            'max_position': 1.0,
+            'stop_loss_pct': 0.02,
+            'take_profit_pct': 0.04,
+            'tick_size': 0.01,
+            'lot_size': 0.0001,
+            'max_slippage': 0.0005,
+            'priority': 'high'
+        },
         'XRPUSDT': {
             'weight': 0.25,
             'min_volume': 30000,
-            'leverage': 3,
+            'leverage': 5,  # Плечо 5x
             'min_position': 1.0,
             'max_position': 500.0,
-            'stop_loss_pct': 0.02,
-            'take_profit_pct': 0.04,
+            'stop_loss_pct': 0.025,  # 2.5% стоп-лосс
+            'take_profit_pct': 0.05,  # 5% тейк-профит
             'tick_size': 0.0001,
             'lot_size': 1.0,
             'max_slippage': 0.001,
-            'priority': 'medium'
+            'priority': 'high'  # Повышен приоритет
         },
         'BTCUSDT': {
             'weight': 0.25,
