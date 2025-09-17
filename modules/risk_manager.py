@@ -3,6 +3,8 @@ from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 from config.trading_config import TradingConfig
 
+from trading_bot.modules import data_fetcher
+
 
 class RiskManager:
     """Менеджер рисков для торгового бота"""
@@ -47,6 +49,11 @@ class RiskManager:
             # Проверка экстренного стопа
             if self.emergency_stop:
                 self.logger.warning(f"Emergency stop active: {self.emergency_reason}")
+                return False
+
+            # НОВОЕ: Проверка волатильности рынка
+            if not self.check_market_volatility(symbol, data_fetcher):
+                self.logger.warning(f"Market too volatile for {symbol}")
                 return False
 
             # Проверка времени торговли

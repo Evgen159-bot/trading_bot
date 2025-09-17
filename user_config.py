@@ -202,7 +202,7 @@ class UserConfig:
             'max_stop_loss_pct': 0.03,  # 3% максимальный стоп-лосс
             'min_take_profit_pct': 0.06,  # 6% минимальный тейк-профит
             'max_take_profit_pct': 0.10,  # 10% максимальный тейк-профит
-            'leverage': 5,  # Плечо 5x
+            'leverage': 1,  # Плечо 1x
             'max_position_value_pct': 0.05  # 5% максимум от баланса на позицию
         }
     }
